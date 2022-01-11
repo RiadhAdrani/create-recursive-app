@@ -18,6 +18,7 @@ module.exports = merge(common, {
                new CssMinimizerWebpackPlugin(),
                new TerserPlugin(),
                new HTMLWebpackPlugin({
+                    template: "./public/index.html",
                     minify: {
                          removeAttributeQuotes: true,
                          collapseWhitespace: true,
