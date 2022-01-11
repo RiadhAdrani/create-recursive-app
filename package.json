@@ -1,6 +1,6 @@
 {
      "name": "@riadh-adrani/create-recursive-app",
-     "version": "1.0.0",
+     "version": "1.0.1",
      "description": "Recursive project starter template.",
      "bin": "./bin/cli.js",
      "main": "index.js",
