@@ -11,7 +11,8 @@ module.exports = merge(common, {
      mode: "production",
      output: {
           filename: "main.[contenthash].js",
-          path: path.resolve(__dirname, "dist"),
+          path: path.resolve(__dirname, "docs"),
+          publicPath: "/",
      },
      optimization: {
           minimizer: [
@@ -19,6 +20,16 @@ module.exports = merge(common, {
                new TerserPlugin(),
                new HTMLWebpackPlugin({
                     template: "./public/index.html",
+                    filename: "index.html",
+                    minify: {
+                         removeAttributeQuotes: true,
+                         collapseWhitespace: true,
+                         removeComments: true,
+                    },
+               }),
+               new HTMLWebpackPlugin({
+                    template: "./public/index.html",
+                    filename: "404.html",
                     minify: {
                          removeAttributeQuotes: true,
                          collapseWhitespace: true,

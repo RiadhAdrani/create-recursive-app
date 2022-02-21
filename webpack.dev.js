@@ -10,6 +10,7 @@ module.exports = merge(common, {
      output: {
           filename: "main.js",
           path: path.resolve(__dirname, "dist"),
+          publicPath: "/",
      },
      plugins: [new HtmlWebpackPlugin({ template: "./public/index.html" })],
      module: {
@@ -17,6 +18,10 @@ module.exports = merge(common, {
      },
      devServer: {
           hot: true,
+          liveReload: false,
+          static: {
+               directory: path.join(__dirname, "public"),
+          },
           historyApiFallback: true,
      },
 });
