@@ -1,14 +1,15 @@
-import { Recursive, Components, Style } from "@riadh-adrani/recursive";
+import { Components, DevMode, Render } from "@riadh-adrani/recursive";
+import { SetStyle } from "@riadh-adrani/recursive/style";
 
 import logo from "./logo.png";
 
 const { P, Column, Img, H1, A, Span } = Components;
 
 // Enable disable dev logs
-Recursive.DevMode(true);
+DevMode(false);
 
 // Create a style Sheet
-Style.SetStyle({
+SetStyle({
      selectors: {
           "body,html": {
                margin: "0px",
@@ -43,9 +44,9 @@ Style.SetStyle({
 });
 
 // Render your app
-Recursive.Render(() =>
+Render(() =>
      Column({
-          styleSheet: {
+          style: {
                className: "wrapper",
                normal: {
                     border: "2px solid #cf202655",
@@ -61,12 +62,15 @@ Recursive.Render(() =>
                Img({
                     src: logo,
                     width: "250",
-                    style: { animation: "float 1.5s ease-out infinite" },
+                    style: {
+                         className: "animated-logo",
+                         normal: { animation: "float 1.5s ease-out infinite" },
+                    },
                }),
                H1({ text: "Hello Recrusive" }),
                P({
                     text: "Thank you for trying Recursive 😀",
-                    styleSheet: {
+                    style: {
                          className: "hello-recursive",
                          normal: {
                               padding: "5px",
@@ -78,10 +82,14 @@ Recursive.Render(() =>
                     href: "https://github.com/RiadhAdrani/recursive",
                     target: "blank",
                     style: {
-                         background: "#cf202655",
-                         marginTop: "15px",
-                         padding: "5px 10px",
-                         color: "white",
+                         className: "recursive-link",
+                         scoped: true,
+                         normal: {
+                              background: "#cf202655",
+                              marginTop: "15px",
+                              padding: "5px 10px",
+                              color: "white",
+                         },
                     },
                     children: ["Support the project on github"],
                }),
