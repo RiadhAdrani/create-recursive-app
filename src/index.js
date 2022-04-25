@@ -1,15 +1,14 @@
-import { Components, DevMode, Render } from "@riadh-adrani/recursive";
-import { SetStyle } from "@riadh-adrani/recursive/style";
+import { DevMode, Render } from "@riadh-adrani/recursive";
+import { P, Column, Img, H1, A } from "@riadh-adrani/recursive/components";
+import { setStyle } from "@riadh-adrani/recursive/style";
 
 import logo from "./logo.png";
-
-const { P, Column, Img, H1, A } = Components;
 
 // Enable disable dev logs
 DevMode(false);
 
 // Create a style Sheet
-SetStyle({
+setStyle({
     selectors: {
         "body,html": {
             margin: "0px",
