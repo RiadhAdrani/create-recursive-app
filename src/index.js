@@ -1,6 +1,5 @@
-import { DevMode, Render } from "@riadh-adrani/recursive";
 import { P, Column, Img, H1, A } from "@riadh-adrani/recursive/components";
-import { setStyle } from "@riadh-adrani/recursive/style";
+import { setStyle, DevMode, Render } from "@riadh-adrani/recursive";
 
 import logo from "./logo.png";
 
