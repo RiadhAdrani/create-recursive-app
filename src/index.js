@@ -1,4 +1,5 @@
-import { P, Column, Img, H1, A } from "@riadh-adrani/recursive/components";
+import { P, Img, H1, A } from "@riadh-adrani/recursive-components/Standard.js";
+import { Column } from "@riadh-adrani/recursive-components/Utility.js";
 import { setStyle, DevMode, Render } from "@riadh-adrani/recursive";
 
 import logo from "./logo.png";
@@ -65,9 +66,9 @@ Render(() =>
                     normal: { animation: "float 1.5s ease-out infinite" },
                 },
             }),
-            H1({ text: "Hello Recrusive" }),
+            H1({ children: "Hello Recrusive" }),
             P({
-                text: "Thank you for trying Recursive 😀",
+                children: "Thank you for trying Recursive 😀",
                 style: {
                     className: "hello-recursive",
                     normal: {
