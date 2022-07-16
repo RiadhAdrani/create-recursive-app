@@ -16,7 +16,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@riadh-adrani/recursive-web": "^0.1.0"
+        "@riadh-adrani/recursive-web": "^0.1.6"
     },
     "devDependencies": {
         "clean-webpack-plugin": "^4.0.0",
