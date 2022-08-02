@@ -15,9 +15,9 @@ const runCommand = (command) => {
 const repoName = process.argv[2];
 const gitCheckoutCommand = `git clone --depth 1 https://github.com/RiadhAdrani/create-recursive-app ${repoName}`;
 const installDepsCommand = `cd ${repoName} && npm install`;
-const deleteGit = `rm -fr .git`;
-const deletBin = `rm -fr bin`;
-const gitInit = `git init`;
+const deleteGit = `cd ${repoName} && rmdir /s .git`;
+const deleteBin = `cd ${repoName} && rmdir /s bin`;
+const gitInit = `cd ${repoName} && git init`;
 
 console.log(`Cloning the repository with name ${repoName}`);
 const checkOut = runCommand(gitCheckoutCommand);

@@ -1,6 +1,6 @@
 {
     "name": "@riadh-adrani/create-recursive-app",
-    "version": "1.1.2",
+    "version": "1.1.6",
     "description": "Recursive project starter template.",
     "bin": "./bin/cli.js",
     "main": "index.js",
@@ -16,7 +16,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@riadh-adrani/recursive-web": "^0.7.32"
+        "@riadh-adrani/recursive-web": "^0.7.34"
     },
     "devDependencies": {
         "clean-webpack-plugin": "^4.0.0",
