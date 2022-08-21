@@ -1,8 +1,20 @@
-# [Create Recursive App](https://riadhadrani.github.io/recursive-website/) [![Version](https://img.shields.io/npm/v/@riadh-adrani/create-recursive-app?color=blue)](https://www.npmjs.com/package/@riadh-adrani/create-recursive-app) [![Licence](https://img.shields.io/npm/l/@riadh-adrani/recursive)](https://github.com/RiadhAdrani/create-recursive-app/blob/master/LICENSE)
+<h1 align="center">Create Recurisve App</h1>
+<p align="center">
+<img src="https://raw.githubusercontent.com/RiadhAdrani/recursive/master/logo.png" height="80" width="80">
+<br>
+<br>
+<i>Starter template project for Recursive Web</i>
+<p align=center>
+<a href="https://www.npmjs.com/package/@riadh-adrani/create-recursive-app"><img src="https://img.shields.io/npm/v/@riadh-adrani/create-recursive-app?color=blue"/></a>
+<a href="https://img.shields.io/npm/l/@riadh-adrani/create-recursive-app"><img src="https://img.shields.io/npm/l/@riadh-adrani/create-recursive-app"/></a>
+</p>
+</p>
 
-Provide a template to start devloping with `recursive`.
+---
 
-Use this command :
+Provide a template to start devloping with `Recursive Web`.
+
+To get started, run :
 
 ```shell
 npx @riadh-adrani/create-recursive-app my-app
@@ -24,6 +36,6 @@ npm start
 
 In the browser, check http://localhost:8080/
 
-Hot reloading is enabled, but it is under development to add state preservation for `state` and `routes`.
+`Hot reloading enabled !`
 
 Thank you for trying Recursive 😀

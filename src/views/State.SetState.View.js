@@ -14,7 +14,6 @@ export default () => {
             Spacer({ height: "5px" }),
             Input({
                 value: text,
-                type: "text",
                 onInput: (e) => {
                     setText(e.target.value);
                 },

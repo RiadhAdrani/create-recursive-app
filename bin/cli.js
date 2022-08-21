@@ -27,11 +27,13 @@ console.log(`Installing dependencies for ${repoName}`);
 const installDeps = runCommand(installDepsCommand);
 if (!installDeps) process.exit(-1);
 
-console.log(`Removing .git`);
+console.log(`Removing template .git folder`);
+console.log(`Press (y) to continue`);
 const removeDotGit = runCommand(deleteGit);
 if (!removeDotGit) process.exit(-1);
 
-console.log(`Removing bin`);
+console.log(`Removing template bin folder`);
+console.log(`Press (y) to continue`);
 const removeBin = runCommand(deleteBin);
 if (!removeBin) process.exit(-1);
 
