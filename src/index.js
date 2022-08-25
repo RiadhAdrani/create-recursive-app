@@ -166,6 +166,15 @@ function getRoute() {
     return App.getRoute();
 }
 
+/**
+ * Create a new route object
+ * @param {import("@riadh-adrani/recursive/lib").Route} params
+ * @returns
+ */
+function route(params) {
+    return arguments[0];
+}
+
 export {
     Link,
     goTo,
@@ -180,4 +189,5 @@ export {
     getParams,
     getRoute,
     renderRoute,
+    route,
 };
