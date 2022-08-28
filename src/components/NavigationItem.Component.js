@@ -1,5 +1,6 @@
+import { Link } from "@riadh-adrani/recursive-web/html";
 import { getVar } from "@riadh-adrani/recursive-web/style/methods";
-import { getRoute, Link } from "..";
+import { getRoute } from "..";
 
 export default (text, to) => {
     const selected = to == getRoute();

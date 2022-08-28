@@ -1,4 +1,5 @@
 import { RecursiveWebApp } from "@riadh-adrani/recursive-web";
+import { useApp } from "@riadh-adrani/recursive-web/packages/components";
 import AppRoutes from "./App.Routes";
 import AppTree from "./App.Tree";
 
@@ -6,6 +7,9 @@ const App = new RecursiveWebApp({
     root: document.body,
     app: AppTree,
     route: AppRoutes,
+    onAppInit: (_app) => {
+        useApp(_app);
+    },
 });
 
 App.render();
@@ -150,15 +154,6 @@ function createComponentStyle(param) {
 }
 
 /**
- * Create a modifed `<a>` element for routing.
- * @param {import("@riadh-adrani/recursive-web/lib").AProps} props
- * @returns
- */
-function Link(props) {
-    return App.Link(props);
-}
-
-/**
  * Returns the currentl route path.
  * @returns {string}
  */
@@ -176,7 +171,6 @@ function route(params) {
 }
 
 export {
-    Link,
     goTo,
     createComponentStyle,
     setStyle,

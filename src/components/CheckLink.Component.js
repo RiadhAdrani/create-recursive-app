@@ -1,5 +1,4 @@
 import { A } from "@riadh-adrani/recursive-web/html";
-import { getVar } from "@riadh-adrani/recursive-web/style/methods";
 
 export default (text, link) => {
     return A({
