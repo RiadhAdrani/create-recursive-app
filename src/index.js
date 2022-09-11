@@ -1,4 +1,4 @@
-import { RecursiveWebApp } from "@riadh-adrani/recursive-web";
+import { RecursiveWebApp } from "@riadh-adrani/recursive-web/index";
 import { useApp } from "@riadh-adrani/recursive-web/packages/components";
 import AppRoutes from "./App.Routes";
 import AppTree from "./App.Tree";
@@ -107,6 +107,16 @@ function getRef(key, defaultValue = document.createElement("div")) {
 }
 
 /**
+ * Execute an effect.
+ * @param {string} key identifier.
+ * @param {Array<>} dependencies effect dependencies that will decide if the effect should be called again.
+ * @param {Function} callback callback to be executed.
+ */
+function setEffect(key, dependencies, callback) {
+    App.setEffect(key, callback, dependencies);
+}
+
+/**
  * Batch update made within the callback.
  *
  * Used generally to state update after an asynchronous call.
@@ -164,7 +174,7 @@ function getRoute() {
 /**
  * Create a new route object
  * @param {import("@riadh-adrani/recursive/lib").Route} params
- * @returns
+ * @returns {import("@riadh-adrani/recursive/lib").Route}
  */
 function route(params) {
     return arguments[0];
@@ -175,6 +185,7 @@ export {
     createComponentStyle,
     setStyle,
     setState,
+    setEffect,
     updateOn,
     getRef,
     getState,
