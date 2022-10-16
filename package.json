@@ -2,7 +2,6 @@
     "name": "@riadh-adrani/create-recursive-app",
     "version": "1.1.10",
     "description": "Recursive Web project starter template.",
-    "bin": "./bin/cli.js",
     "main": "index.js",
     "repository": {
         "type": "git",
