@@ -15,7 +15,6 @@ const runCommand = (command) => {
 const repoName = process.argv[2];
 const gitCheckoutCommand = `git clone --single-branch -b template https://github.com/RiadhAdrani/create-recursive-app ${repoName}`;
 const installDepsCommand = `cd ${repoName} && npm install`;
-const deleteBin = `cd ${repoName} && rmdir /s bin`;
 const gitInit = `cd ${repoName} && git init`;
 
 console.log(`Cloning the repository with name ${repoName}`);
@@ -25,11 +24,6 @@ if (!checkOut) process.exit(-1);
 console.log(`Installing dependencies for ${repoName}`);
 const installDeps = runCommand(installDepsCommand);
 if (!installDeps) process.exit(-1);
-
-console.log(`Removing template bin folder`);
-console.log(`Press (y) to continue`);
-const removeBin = runCommand(deleteBin);
-if (!removeBin) process.exit(-1);
 
 console.log(`Initializing new git repository`);
 const initializeGit = runCommand(gitInit);
