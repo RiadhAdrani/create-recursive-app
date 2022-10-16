@@ -13,7 +13,7 @@ const runCommand = (command) => {
 };
 
 const repoName = process.argv[2];
-const gitCheckoutCommand = `git clone --single-branch -b master https://github.com/RiadhAdrani/create-recursive-app ${repoName}`;
+const gitCheckoutCommand = `git clone --single-branch -b template https://github.com/RiadhAdrani/create-recursive-app ${repoName}`;
 const installDepsCommand = `cd ${repoName} && npm install`;
 const deleteBin = `cd ${repoName} && rmdir /s bin`;
 const gitInit = `cd ${repoName} && git init`;
