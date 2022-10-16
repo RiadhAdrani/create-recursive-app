@@ -10,6 +10,20 @@ module.exports = {
         rules: [
             { test: /\.html$/, use: ["html-loader"] },
             {
+                test: /\.ttf$/,
+                use: [
+                    {
+                        loader: "file-loader",
+                        options: {
+                            esModule: false,
+                            name: "[name].[hash].[ext]",
+                            outputPath: "fonts",
+                        },
+                    },
+                ],
+                type: "javascript/auto",
+            },
+            {
                 test: /\.css|scss|less$/,
                 use: [
                     {
