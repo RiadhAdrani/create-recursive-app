@@ -15,7 +15,7 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "@riadh-adrani/recursive-web": "^0.7.51"
+        "@riadh-adrani/recursive-web": "^0.7.55"
     },
     "devDependencies": {
         "clean-webpack-plugin": "^4.0.0",

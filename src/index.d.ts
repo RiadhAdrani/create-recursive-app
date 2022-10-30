@@ -1,15 +1,20 @@
-import { createComponentStyle } from "@riadh-adrani/recursive-web";
+import {
+    createComponentStyle,
+    importFile,
+    mergeComponentStyles,
+} from "@riadh-adrani/recursive-web";
 import { FreeStyleSheet } from "@riadh-adrani/recursive-web/lib";
+import { ObjectOf } from "@riadh-adrani/recursive-web/types/util";
 import { createElement, createRoute } from "@riadh-adrani/recursive-web/use";
-import { RecursiveElement, StateArray } from "@riadh-adrani/recursive/lib";
+import { StateArray, BaseElement } from "@riadh-adrani/recursive/lib";
 
-export { createElement, createComponentStyle, createRoute };
+export { createElement, createComponentStyle, createRoute, importFile, mergeComponentStyles };
 
 /**
  * Calculate the parameters of the current path and returns them as a key-value object.
  * @throws an error when the router is not initialized.
  */
-export function getParams(): Record<string, string>;
+export function getParams(): ObjectOf<string>;
 
 /**
  * Change the current route and trigger an update if needed.
@@ -26,7 +31,7 @@ export function goTo(path: string): void;
  * @throws an error when the router is not initialized.
  * @returns The current route fragment element.
  */
-export function renderRoute(): RecursiveElement;
+export function renderRoute(): BaseElement;
 
 /**
  * Retrieve the current route as string.
@@ -73,8 +78,8 @@ export function getState<T = any>(key: T): StateArray<T>;
 export function setState<T>(
     key: string,
     value: T,
-    onInit: () => Function,
-    onRemoved: () => void
+    onInit?: () => Function,
+    onRemoved?: () => void
 ): StateArray<T>;
 
 /**
@@ -104,8 +109,8 @@ export function getCache<T = any>(key: string): StateArray<T>;
 export function setCache<T>(
     key: string,
     value: T,
-    onInit: () => Function,
-    onRemoved: () => void
+    onInit?: () => Function,
+    onRemoved?: () => void
 ): StateArray<T>;
 
 /**
@@ -129,7 +134,7 @@ export function setCache<T>(
  * @param {string} key identifier
  * @returns {any} Native Element
  */
-export function getRef<T = HTMLElement>(key: string, defaultValue: T): T;
+export function getRef<T = HTMLElement>(key: string, defaultValue?: T): T;
 
 /**
  * Execute an effect.

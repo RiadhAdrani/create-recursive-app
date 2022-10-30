@@ -1,8 +1,15 @@
-import { RecursiveWebApp, createComponentStyle } from "@riadh-adrani/recursive-web/index";
+import {
+    RecursiveWebApp,
+    createComponentStyle,
+    importFile,
+    mergeComponentStyles,
+} from "@riadh-adrani/recursive-web/index";
 import { createElement, createRoute } from "@riadh-adrani/recursive-web/use";
 import app from "./app/App";
 
 const webApp = new RecursiveWebApp({ root: document.body, app });
+
+export { importFile, mergeComponentStyles };
 
 export { createComponentStyle, createElement, createRoute };
 
