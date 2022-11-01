@@ -1,6 +1,6 @@
 {
     "name": "@riadh-adrani/create-recursive-app",
-    "version": "1.2.5",
+    "version": "1.2.7",
     "description": "Recursive Web project starter template.",
     "bin": "./bin/cli.js",
     "main": "index.js",
@@ -14,7 +14,8 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "@riadh-adrani/cypher-writer": "^1.0.0",
+        "@riadh-adrani/cypher-writer": "^1.0.1",
+        "@riadh-adrani/utility-js": "0.14.0",
         "inquirer": "^9.1.4",
         "prettier": "^2.7.1"
     }

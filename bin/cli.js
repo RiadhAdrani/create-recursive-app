@@ -4,12 +4,15 @@ import fs from "fs";
 import { execSync } from "child_process";
 import cypher from "@riadh-adrani/cypher-writer";
 import prettier from "prettier";
-const { mprt, xprt, cnst, fn, stmt, key, docs } = cypher;
+import { isBlank } from "@riadh-adrani/utility-js";
 
-function writeIntoFile(text, filepath) {
+const { mprt, xprt, fn } = cypher;
+
+function writeIntoFile(text, filepath, format = true) {
     try {
-        fs.writeFileSync(filepath, prettier.format(text, { filepath }));
+        fs.writeFileSync(filepath, format ? prettier.format(text, { filepath }) : text);
     } catch (e) {
+        console.log(e);
         console.log("\x1b[33m", `Something went wrong while writing into '${filepath}'`);
         console.log("\x1b[0m");
     }
@@ -37,23 +40,20 @@ inquirer
                 { name: "Typescript", value: "ts" },
             ],
         },
-        {
-            type: "list",
-            name: "css",
-            message: "Choose your preprocessor",
-            choices: [
-                { name: "Css", value: "css", checked: true },
-                { name: "Sass", value: "sass" },
-            ],
-        },
     ])
     .then((answers) => {
         const options = {
             ts: answers.lang === "ts",
-            sass: (answers.css = "sass"),
         };
 
-        const repo = "test";
+        let repo;
+
+        if (isBlank(process.argv[2])) {
+            console.log("Project name is empty ! Please try again.");
+            return;
+        } else {
+            repo = process.argv[2];
+        }
 
         const dir = (path) => `${repo}/${path}`;
 
@@ -64,26 +64,50 @@ inquirer
 
         const { common, dev, prod } = webpack(options);
 
-        writeIntoFile(gitignore(), dir(".gitignore"));
+        writeIntoFile(tsconfig(), dir("tsconfig.json"));
         writeIntoFile(packageJson(repo, options), dir("package.json"));
         writeIntoFile(common, dir("webpack.common.js"));
         writeIntoFile(dev, dir("webpack.dev.js"));
         writeIntoFile(prod, dir("webpack.prod.js"));
         writeIntoFile(html(repo), dir("/public/index.html"));
-        writeIntoFile(index("js", options), dir("/src/index.js"));
-        writeIntoFile(index("dts", options), dir("/src/index.d.ts"));
-        writeIntoFile(template(repo), dir("src/app/app.js"));
 
-        runCommand(`cd ${repo} && npm install`);
+        writeIntoFile(indexJS(), dir("/src/index.js"));
+        writeIntoFile(indexD(), dir("/src/index.d.ts"));
+
+        writeIntoFile(template(repo), dir(options.ts ? "src/app/app.ts" : "src/app/app.js"));
+
+        const deps = ["@riadh-adrani/recursive-web"];
+        const devDeps = [
+            "clean-webpack-plugin",
+            "css-loader",
+            "file-loader",
+            "html-loader",
+            "html-webpack-plugin",
+            "node-sass",
+            "sass",
+            "sass-loader",
+            "style-loader",
+            "terser-webpack-plugin",
+            "ts-loader",
+            "typescript",
+            "webpack",
+            "webpack-cli",
+            "webpack-dev-server",
+            "webpack-merge",
+        ];
+
+        runCommand(`cd ${repo} && npm install ${deps.join(" ")}`);
+        runCommand(`cd ${repo} && npm install --save-dev ${devDeps.join(" ")}`);
+
+        writeIntoFile(gitignore(), dir(".gitignore"), false);
         runCommand(`cd ${repo} && git init`);
 
         console.log("Almost there !");
-        console.log("install dependencies and start development server : ");
 
-        console.log("\x1b[32m", `cd ${repo} && npm i`);
-        console.log("\x1b[32m", `npm start`);
-
-        console.log("\x1b[0m", "Happy coding !");
+        console.log("\x1b[32m");
+        console.log(`cd ${repo} && npm start`);
+        console.log("\x1b[0m");
+        console.log("Happy coding !");
     });
 
 function template(repo) {
@@ -98,8 +122,9 @@ function template(repo) {
             isArrowFunction: true,
             name: "App",
             body: [
-                cnst("[count,setCount]", 'setState("counter", 0)'),
-                `setStyle({
+                `
+                const [count,setCount] = setState("counter", 0);
+                setStyle({
                     selectors: {
                         "body,html": { margin: 0, fontFamily: "system-ui", fontSize: "large" },
                         button: { fontSize: "x-large" },
@@ -114,7 +139,7 @@ function template(repo) {
                         },
                     },
                     children: [
-                        H1({ children: "Hello ${repo} !" }),
+                        H1({ children: "Hello ${repo}!"}),
                         P({
                             children: [
                                 "This is a template, to get started, visit ",
@@ -140,431 +165,446 @@ function template(repo) {
     ].join("\n");
 }
 
-function index(type) {
-    const webApp = "webApp";
+function indexJS() {
+    return `import {
+        RecursiveWebApp,
+        createComponentStyle,
+        importFile,
+        mergeComponentStyles,
+    } from "@riadh-adrani/recursive-web";
+    import { createElement, createRoute } from "@riadh-adrani/recursive-web/use";
+    
+    import app from "./app/app";
+    
+    const webApp = new RecursiveWebApp({
+        root: document.body,
+        app,
+        base: "",
+        scopedStyle: false,
+        scrollCorrection: false,
+    });
+    
+    export { importFile, mergeComponentStyles };
+    export { createComponentStyle, createElement, createRoute };
+    
+    /**
+     * Calculate the parameters of the current path and returns them as a key-value object.
+     *  @throws an error when the router is not initialized.
+     */
+    export function getParams() {
+        return webApp.getParams();
+    }
+    /**
+     * Change the current route and trigger an update if needed.
+     * @throws an error when the router is not initialized.
+     * @param {string} path Destination path.
+     */
+    export function goTo(path) {
+        return webApp.goTo(path);
+    }
+    /**
+     * Used to inject a route component into the elements tree.
+     * Could be used recursively within nested routes to render the appropriate components
+     *  @throws an error when the router is not initialized.
+     * * @returns The current route fragment element.
+     */
+    export function renderRoute() {
+        return webApp.renderRoute();
+    }
+    /**
+     *  Retrieve the current route as string.
+     * @throws an error when the router is not initialized.
+     */
+    export function getRoute() {
+        return webApp.getRoute();
+    }
+    /**
+     * return the currently targeted anchor
+     *  @throws an error when the router is not initialized.
+     */
+    export function getAnchor() {
+        return webApp.getAnchor();
+    }
+    /**
+     * Return the base of the application.
+     * @throws an error when the router is not initialized.
+     * @returns {string} Base as string.
+     */
+    export function getBase() {
+        return webApp.getBase();
+    }
+    /**
+     * Retrieve an existing stateful object from the \`state\` store if it exists.
+     * @param {string} key identifier
+     * @throw an error if the state does not exist.
+     * @returns {StateArray} state as an array.
+     */
+    export function getState(key) {
+        return webApp.getState(key);
+    }
+    /**
+     * Retrieve an existing stateful object from the \`cache\` store if it exists.
+     * @param {string} key identifier
+     * @throw an error if the state does not exist.
+     * @returns {StateArray} state as an array.
+     */
+    export function getCache(key) {
+        return webApp.getCache(key);
+    }
+    /**
+     * Retrieve an existing element from the \`reference\` store, or the default value.
+     * Use the \`hooks.onRef\` hook and return a string from the function to initialize a new reference.
+     */
+    export function getRef(key, defaultValue) {
+        return webApp.getRef(key, defaultValue);
+    }
+    /**
+     * Create and save a stateful object in the \`state\` store within the global \`StateStore\`.
+     * Objects created by this method are deleted when they are not used or called in a rendering iteration
+     * @param {string} key unique identifier of the state within its store.
+     * @param {any} value initial value
+     * @param {Function} onInit a function that will execute when the state is initialized.
+     * If the return value of this function is a function itself,
+     * it will be executed whe the state is destroyed.
+     * @param {Function} onRemoved a function that will execute when the state has been destroyed.
+     * @returns {StateArray} state as an Array
+     */
+    export function setState(key, value, onInit, onRemoved) {
+        return webApp.setState(key, value, onInit, onRemoved);
+    }
+    /**
+     * Create and save a stateful object in the \`cache\` store within the global \`StateStore\`.
+     * Objects created by this method are not deleted when they are not used,
+     * unless the number of cached object exceed the maximum allocated size which is by default \`1000\`.
+     * Older states will be deleted first.
+     * @param {string} key unique identifier of the state within its store.
+     * @param {any} value initial value
+     * @param {Function} onInit a function that will execute when the state is initialized.
+     * If the return value of this function is a function itself,
+     * it will be executed whe the state is destroyed.
+     * @param {Function} onRemoved a function that will execute when the state has been destroyed.
+     * @returns {StateArray} state as an array.
+     */
+    export function setCache(key, value, onInit, onRemoved) {
+        return webApp.setCache(key, value, onInit, onRemoved);
+    }
+    /**
+     * Execute an effect.
+     * @param {string} key identifier.
+     * @param {Function} callback callback to be executed.
+     * @param {Array} dependencies effect dependencies that will decide if the effect should be called again.
+     */
+    export function setEffect(key, dependencies, callback) {
+        return webApp.setEffect(key, dependencies, callback);
+    }
+    /**
+     * Batch update made within the callback.
+     * Used generally to state update after an asynchronous call.
+     * \`The callback function should not be an asynchronous function.\`
+     */
+    export function updateOn(callback) {
+        webApp.updateOn(callback);
+    }
+    /**
+     * Add a style sheet that will be evaluated every time the app rerender.
+     * Can be used multiple times, at any depth within the tree of components.
+     *  @param style style sheet declaration.
+     */
+    export function setStyle(style) {
+        webApp.setStyle(style);
+    }
+    
+    webApp.render();
+    `;
+}
 
-    const isTS = type === "ts" || type === "dts";
-    const isDTS = type === "dts";
-
-    const exportFn = ({
-        name,
-        params = [],
-        body = "",
-        returnType = "void",
-        isDTS = false,
-        isTS = false,
-        typeParameters,
-        jsDocs,
-    }) => {
-        const parameters = params.map((p) => (isDTS || isTS ? key(p[0], p[1]) : p[0]));
-
-        return (
-            docs(jsDocs) +
-            "\n" +
-            "export " +
-            fn({
-                name,
-                parameters,
-                body,
-                isDeclaration: isDTS,
-                isTypescript: isTS,
-                returnType,
-                typeParameters,
-                isArrowFunction: false,
-            })
-        );
-    };
-
-    const exportedFunctions = [
-        {
-            name: "getParams",
-            parameters: [],
-            body: ["return webApp.getParams()"],
-            returnType: "ObjectOf<string>",
-            docs: [
-                "Calculate the parameters of the current path and returns them as a key-value object.",
-                " @throws an error when the router is not initialized.",
-            ],
-        },
-        {
-            name: "goTo",
-            parameters: [["path", "string"]],
-            body: ["return webApp.goTo(path)"],
-            docs: [
-                "Change the current route and trigger an update if needed.",
-                "@throws an error when the router is not initialized.",
-                "@param {string} path Destination path.",
-            ],
-        },
-        {
-            name: "renderRoute",
-            parameters: [],
-            body: ["return webApp.renderRoute()"],
-            returnType: "BaseElement",
-            docs: [
-                "Used to inject a route component into the elements tree.",
-                "Could be used recursively within nested routes to render the appropriate components",
-                " @throws an error when the router is not initialized.",
-                "* @returns The current route fragment element.",
-            ],
-        },
-        {
-            name: "getRoute",
-            parameters: [],
-            body: ["return webApp.getRoute()"],
-            returnType: "string",
-            docs: [
-                " Retrieve the current route as string.",
-                "@throws an error when the router is not initialized.",
-            ],
-        },
-        {
-            name: "getAnchor",
-            parameters: [],
-            body: ["return webApp.getAnchor()"],
-            returnType: "string",
-            docs: [
-                "return the currently targeted anchor",
-                " @throws an error when the router is not initialized.",
-            ],
-        },
-        {
-            name: "getBase",
-            parameters: [],
-            body: ["return webApp.getBase()"],
-            returnType: "string",
-            docs: [
-                "Return the base of the application.",
-                "@throws an error when the router is not initialized.",
-                "@returns {string} Base as string.",
-            ],
-        },
-        {
-            name: "getState",
-            parameters: [["key", "string"]],
-            body: ["return webApp.getState(key)"],
-            typeParameters: ["T = any"],
-            returnType: "StateArray<T>",
-            docs: [
-                "Retrieve an existing stateful object from the `state` store if it exists.",
-                "@param {string} key identifier",
-                "@throw an error if the state does not exist.",
-                "@returns {StateArray} state as an array.",
-            ],
-        },
-        {
-            name: "getCache",
-            parameters: [["key", "string"]],
-            body: ["return webApp.getCache(key)"],
-            typeParameters: ["T = any"],
-            returnType: "StateArray<T>",
-            docs: [
-                "Retrieve an existing stateful object from the `cache` store if it exists.",
-                "@param {string} key identifier",
-                "@throw an error if the state does not exist.",
-                "@returns {StateArray} state as an array.",
-            ],
-        },
-        {
-            name: "getRef",
-            parameters: [
-                ["key", "string"],
-                ["defaultValue", "T"],
-            ],
-            typeParameters: ["T = HTMLElement"],
-            body: ["return webApp.getRef(key, defaultValue)"],
-            returnType: "T",
-            docs: [
-                "Retrieve an existing element from the `reference` store, or the default value.",
-                "Use the `hooks.onRef` hook and return a string from the function to initialize a new reference.",
-            ],
-        },
-        {
-            name: "setState",
-            parameters: [
-                ["key", "string"],
-                ["value", "T"],
-                ["onInit", "() => Function"],
-                ["onRemoved", "() => void"],
-            ],
-            body: ["return webApp.setState(key, value, onInit, onRemoved)"],
-            typeParameters: ["T"],
-            returnType: "StateArray<T>",
-            docs: [
-                "Create and save a stateful object in the `state` store within the global `StateStore`.",
-                ,
-                "Objects created by this method are deleted when they are not used or called in a rendering iteration",
-                "@param {string} key unique identifier of the state within its store.",
-                "@param {any} value initial value",
-                "@param {Function} onInit a function that will execute when the state is initialized.",
-                "If the return value of this function is a function itself,",
-                "it will be executed whe the state is destroyed.",
-                "@param {Function} onRemoved a function that will execute when the state has been destroyed.",
-                "@returns {StateArray} state as an Array",
-            ],
-        },
-        {
-            name: "setCache",
-            parameters: [
-                ["key", "string"],
-                ["value", "T"],
-                ["onInit", "() => (Function | void)"],
-                ["onRemoved", "() => void"],
-            ],
-            body: ["return webApp.setCache(key, value, onInit, onRemoved)"],
-            typeParameters: ["T"],
-            returnType: "StateArray<T>",
-            docs: [
-                "Create and save a stateful object in the `cache` store within the global `StateStore`.",
-                "Objects created by this method are not deleted when they are not used,",
-                "unless the number of cached object exceed the maximum allocated size which is by default `1000`.",
-                "Older states will be deleted first.",
-                "@param {string} key unique identifier of the state within its store.",
-                "@param {any} value initial value",
-                "@param {Function} onInit a function that will execute when the state is initialized.",
-                "If the return value of this function is a function itself,",
-                "it will be executed whe the state is destroyed.",
-                "@param {Function} onRemoved a function that will execute when the state has been destroyed.",
-                "@returns {StateArray} state as an array.",
-            ],
-        },
-        {
-            name: "setEffect",
-            parameters: [
-                ["key", "string"],
-                ["dependencies", "Array<any>"],
-                ["callback", "() => (Function | void)"],
-            ],
-            body: ["return webApp.setEffect(key, dependencies, callback)"],
-            docs: [
-                "Execute an effect.",
-                "@param {string} key identifier.",
-                "@param {Function} callback callback to be executed.",
-                "@param {Array} dependencies effect dependencies that will decide if the effect should be called again.",
-            ],
-        },
-        {
-            name: "updateOn",
-            parameters: [["callback", "() => void"]],
-            body: ["webApp.updateOn(callback)"],
-            docs: [
-                "Batch update made within the callback.",
-                "Used generally to state update after an asynchronous call.",
-                "`The callback function should not be an asynchronous function.`",
-            ],
-        },
-        {
-            name: "setStyle",
-            parameters: [["style", "FreeStyleSheet"]],
-            body: ["webApp.setStyle(style)"],
-            docs: [
-                "Add a style sheet that will be evaluated every time the app rerender.",
-                "Can be used multiple times, at any depth within the tree of components.",
-                " @param style style sheet declaration.",
-            ],
-        },
-    ];
-
+function indexD() {
     return [
-        mprt(
-            ["RecursiveWebApp", "createComponentStyle", "importFile", "mergeComponentStyles"],
-            "@riadh-adrani/recursive-web"
-        ),
-        mprt(["FreeStyleSheet"], "@riadh-adrani/recursive-web/lib"),
-        mprt(["createElement", "createRoute"], "@riadh-adrani/recursive-web/use"),
+        `import { ObjectOf } from "@riadh-adrani/recursive-web/types/util";
+         import { StateArray, BaseElement } from "@riadh-adrani/recursive/lib";`,
         "",
-        isDTS || isTS ? mprt(["ObjectOf"], "@riadh-adrani/recursive-web/types/util") : "",
-        isDTS || isTS ? mprt(["StateArray", "BaseElement"], "@riadh-adrani/recursive/lib") : "",
+        `export { importFile, mergeComponentStyles, createComponentStyle } from "@riadh-adrani/recursive-web"
+        export {  createElement, createRoute } from "@riadh-adrani/recursive"`,
         "",
-        isDTS ? "" : mprt("app", "./app/App"),
-        "",
-        isDTS
-            ? ""
-            : cnst(
-                  webApp,
-                  "new RecursiveWebApp({ root: document.body, app, base: '', scopedStyle: false,scrollCorrection: false, })"
-              ),
-        "",
-        xprt(["importFile", "mergeComponentStyles"]),
-        xprt(["createComponentStyle", "createElement", "createRoute"]),
-        "",
-        ...exportedFunctions.map((fn) =>
-            exportFn({
-                name: fn.name,
-                typeParameters: fn.typeParameters,
-                body: fn.body,
-                params: fn.parameters,
-                returnType: fn.returnType,
-                isDTS,
-                isTS,
-                jsDocs: fn.docs,
-            })
-        ),
-        "",
-        isDTS ? "" : stmt("webApp.render()"),
+        `/**
+         * Calculate the parameters of the current path and returns them as a key-value object.
+         *  @throws an error when the router is not initialized.
+         */
+        export function getParams(): ObjectOf<string>;`,
+        `/**
+        * Change the current route and trigger an update if needed.
+        * @throws an error when the router is not initialized.
+        * @param {string} path Destination path.
+        */
+       export function goTo(path: string): void;`,
+        `/**
+        * Used to inject a route component into the elements tree.
+        * Could be used recursively within nested routes to render the appropriate components
+        *  @throws an error when the router is not initialized.
+        * @returns The current route fragment element.
+        */
+       export function renderRoute(): BaseElement;`,
+        `/**
+       *  Retrieve the current route as string.
+       * @throws an error when the router is not initialized.
+       */
+      export function getRoute(): string;`,
+        `/**
+      * return the currently targeted anchor
+      *  @throws an error when the router is not initialized.
+      */
+     export function getAnchor(): string;`,
+        `/**
+     * Return the base of the application.
+     * @throws an error when the router is not initialized.
+     * @returns {string} Base as string.
+     */
+    export function getBase(): string;`,
+        `/**
+    * Retrieve an existing stateful object from the \`state\` store if it exists.
+    * @param {string} key identifier
+    * @throw an error if the state does not exist.
+    * @returns {StateArray} state as an array.
+    */
+   export function getState<T = any>(key: string): StateArray<T>;`,
+        `/**
+   * Retrieve an existing stateful object from the \`cache\` store if it exists.
+   * @param {string} key identifier
+   * @throw an error if the state does not exist.
+   * @returns {StateArray} state as an array.
+   */`,
+        `export function getCache<T = any>(key: string): StateArray<T>;
+   /**
+    * Retrieve an existing element from the \`reference\` store, or the default value.
+    * Use the \`hooks.onRef\` hook and return a string from the function to initialize a new reference.
+    */`,
+        `export function getRef<T = HTMLElement>(key: string, defaultValue: T): T;`,
+        `/**
+    * Create and save a stateful object in the \`state\` store within the global \`StateStore\`.
+    * Objects created by this method are deleted when they are not used or called in a rendering iteration
+    * @param {string} key unique identifier of the state within its store.
+    * @param {any} value initial value
+    * @param {Function} onInit a function that will execute when the state is initialized.
+    * If the return value of this function is a function itself,
+    * it will be executed whe the state is destroyed.
+    * @param {Function} onRemoved a function that will execute when the state has been destroyed.
+    * @returns {StateArray} state as an Array
+    */
+   export function setState<T>(
+       key: string,
+       value: T,
+       onInit?: () => Function,
+       onRemoved?: () => void
+   ): StateArray<T>;`,
+        `/**
+   * Create and save a stateful object in the \`cache\` store within the global \`StateStore\`.
+   * Objects created by this method are not deleted when they are not used,
+   * unless the number of cached object exceed the maximum allocated size which is by default \`1000\`.
+   * Older states will be deleted first.
+   * @param {string} key unique identifier of the state within its store.
+   * @param {any} value initial value
+   * @param {Function} onInit a function that will execute when the state is initialized.
+   * If the return value of this function is a function itself,
+   * it will be executed whe the state is destroyed.
+   * @param {Function} onRemoved a function that will execute when the state has been destroyed.
+   * @returns {StateArray} state as an array.
+   */
+  export function setCache<T>(
+      key: string,
+      value: T,
+      onInit?: () => Function | void,
+      onRemoved?: () => void
+  ): StateArray<T>;`,
+        `/**
+  * Execute an effect.
+  * @param {string} key identifier.
+  * @param {Function} callback callback to be executed.
+  * @param {Array} dependencies effect dependencies that will decide if the effect should be called again.
+  */
+ export function setEffect(
+     key: string,
+     dependencies: Array<any>,
+     callback: () => Function | void
+ ): void;`,
+        `/**
+ * Batch update made within the callback.
+ * Used generally to state update after an asynchronous call.
+ * The callback function should not be an asynchronous function.
+ */
+export function updateOn(callback: () => void): void;`,
+        `/**
+    * Add a style sheet that will be evaluated every time the app rerender.
+    * Can be used multiple times, at any depth within the tree of components.
+    *  @param style style sheet declaration.
+    */
+   export function setStyle(style: FreeStyleSheet): void;`,
     ].join("\n");
 }
 
-function webpack({ ts = false, sass = false }) {
-    const common = [
-        mprt("path", "path", true),
-        xprt(
-            [
-                `entry: "./src/index.js"`,
-                `output: { filename: "main.js", path: path.resolve(__dirname, "dist"),}`,
-                `modules: { 
-                rules: [
-                    { test: /\\.html$/, use: ["html-loader"] },
-                    {
-                        test: /\\.ttf$/,
-                        use: [
-                            {
-                                loader: "file-loader",
-                                options: {
-                                    esModule: false,
-                                    name: "[name].[hash].[ext]",
-                                    outputPath: "fonts",
-                                },
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                    {
-                        test: /\\.css|scss|less$/,
-                        use: [
-                            {
-                                loader: "file-loader",
-                                options: {
-                                    esModule: false,
-                                    name: "[name].[hash].[ext]",
-                                    outputPath: "styles",
-                                },
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                    {
-                        test: /\\.svg|png|jpg|gif$/,
-                        use: [
-                            {
-                                loader: "file-loader",
-                                options: {
-                                    esModule: false,
-                                    name: "[name].[hash].[ext]",
-                                    outputPath: "imgs",
-                                },
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                    {
-                        test: /\\.pdf|md$/,
-                        use: [
-                            {
-                                loader: "file-loader",
-                                options: {
-                                    esModule: false,
-                                    name: "[name].[hash].[ext]",
-                                    outputPath: "files",
-                                },
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                ] 
-            }`,
-            ],
-            false,
-            true
-        ),
-    ].join("\n");
+function tsconfig() {
+    return `{
+        "compilerOptions": {
+            "outDir": "./dist/",
+            "noImplicitAny": true,
+            "module": "es6",
+            "target": "es5",
+            "allowJs": true,
+            "moduleResolution": "node"
+        }
+    }
+    `;
+}
 
-    const dev = [
-        mprt("HtmlWebpackPlugin", "html-webpack-plugin", true),
-        mprt("path", "path", true),
-        mprt(["merge"], "webpack-merge", true),
-        mprt("common", "./webpack.common"),
-        mprt("webpack", "webpack"),
-        cnst("mode", "development"),
-        xprt(
-            [
-                "mode",
-                `output: {
-                        filename: "main.js",
-                        path: path.resolve(__dirname, "dist"),
-                        publicPath: "/",
-                }`,
-                `plugins: [
-                        new HtmlWebpackPlugin({ template: "./public/index.html" }),
-                        new webpack.DefinePlugin({
-                            "typeof window": JSON.stringify("object"),
-                            "process.env.NODE_ENV": JSON.stringify(mode),
-                        }),
-                    ]`,
-                `module: {
-                        rules: [],
-                }`,
-                `devServer: {
-                        hot: true,
-                        liveReload: false,
-                        static: {
-                            directory: path.join(__dirname, "public"),
+function webpack() {
+    const common = `const path = require("path");
+
+    module.exports = {
+        entry: "./src/index.js",
+        output: {
+            filename: "main.js",
+            path: path.resolve(__dirname, "dist"),
+        },
+        resolve: {
+            extensions: [".tsx", ".ts", ".js"],
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.tsx?$/,
+                    use: "ts-loader",
+                    exclude: /node_modules/,
+                },
+                { test: /\.html$/, use: ["html-loader"] },
+                {
+                    test: /\.s[ac]ss|css$/i,
+                    use: ["style-loader", "css-loader", "sass-loader"],
+                },
+                {
+                    test: /\.ttf$/,
+                    use: [
+                        {
+                            loader: "file-loader",
+                            options: {
+                                esModule: false,
+                                name: "[name].[hash].[ext]",
+                                outputPath: "styles",
+                            },
                         },
-                        historyApiFallback: true,
-                }`,
-            ],
-            false,
-            true
-        ),
-    ].join("\n");
-
-    const prod = [
-        mprt("HtmlWebpackPlugin", "html-webpack-plugin", true),
-        mprt("path", "path", true),
-        mprt(["merge"], "webpack-merge", true),
-        mprt("common", "./webpack.common", true),
-        mprt(["CleanWebpackPlugin"], "clean-webpack-plugin", true),
-        mprt("TerserPlugin", "terser-webpack-plugin", true),
-        cnst("mode", "production"),
-        xprt(
-            [
-                "mode",
-                `output: {
-                    filename: "main.[contenthash].js",
-                    path: path.resolve(__dirname, "docs"),
-                    publicPath: "/",
-                }`,
-                `optimization: {
-                    minimizer: [
-                        new TerserPlugin(),
-                        new HTMLWebpackPlugin({
-                            template: "./public/index.html",
-                            filename: "index.html",
-                            minify: {
-                                removeAttributeQuotes: true,
-                                collapseWhitespace: true,
-                                removeComments: true,
-                            },
-                        }),
-                        new HTMLWebpackPlugin({
-                            template: "./public/index.html",
-                            filename: "404.html",
-                            minify: {
-                                removeAttributeQuotes: true,
-                                collapseWhitespace: true,                                    removeComments: true,
-                            },
-                        }),
                     ],
-                }`,
-                `plugins: [new CleanWebpackPlugin()]`,
-                `module: {
-                    rules: [],
-                }`,
+                    type: "javascript/auto",
+                },
+                {
+                    test: /\.svg|png|jpg|gif$/,
+                    use: [
+                        {
+                            loader: "file-loader",
+                            options: {
+                                esModule: false,
+                                name: "[name].[hash].[ext]",
+                                outputPath: "imgs",
+                            },
+                        },
+                    ],
+                    type: "javascript/auto",
+                },
+                {
+                    test: /\.pdf|md$/,
+                    use: [
+                        {
+                            loader: "file-loader",
+                            options: {
+                                esModule: false,
+                                name: "[name].[hash].[ext]",
+                                outputPath: "files",
+                            },
+                        },
+                    ],
+                    type: "javascript/auto",
+                },
             ],
-            false,
-            true
-        ),
-    ].join("\n");
+        },
+    };
+    `;
+
+    const dev = `const HtmlWebpackPlugin = require("html-webpack-plugin");
+    const path = require("path");
+    const { merge } = require("webpack-merge");
+    const common = require("./webpack.common");
+    const webpack = require("webpack");
+    
+    const mode = "development";
+    
+    module.exports = merge(common, {
+        mode,
+        output: {
+            filename: "main.js",
+            path: path.resolve(__dirname, "dist"),
+            publicPath: "/",
+        },
+        plugins: [
+            new HtmlWebpackPlugin({ template: "./public/index.html" }),
+            new webpack.DefinePlugin({
+                "typeof window": JSON.stringify("object"),
+                "process.env.NODE_ENV": JSON.stringify(mode),
+            }),
+        ],
+        module: {
+            rules: [],
+        },
+        devServer: {
+            hot: true,
+            liveReload: false,
+            static: {
+                directory: path.join(__dirname, "public"),
+            },
+            historyApiFallback: true,
+        },
+    });
+    `;
+
+    const prod = `const path = require("path");
+    const { merge } = require("webpack-merge");
+    const common = require("./webpack.common");
+    const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+    const TerserPlugin = require("terser-webpack-plugin");
+    const HTMLWebpackPlugin = require("html-webpack-plugin");
+    
+    module.exports = merge(common, {
+        mode: "production",
+        output: {
+            filename: "main.[contenthash].js",
+            path: path.resolve(__dirname, "docs"),
+            publicPath: "/",
+        },
+        optimization: {
+            minimizer: [
+                new TerserPlugin(),
+                new HTMLWebpackPlugin({
+                    template: "./public/index.html",
+                    filename: "index.html",
+                    minify: {
+                        removeAttributeQuotes: true,
+                        collapseWhitespace: true,
+                        removeComments: true,
+                    },
+                }),
+                new HTMLWebpackPlugin({
+                    template: "./public/index.html",
+                    filename: "404.html",
+                    minify: {
+                        removeAttributeQuotes: true,
+                        collapseWhitespace: true,
+                        removeComments: true,
+                    },
+                }),
+            ],
+        },
+        plugins: [new CleanWebpackPlugin()],
+        module: {
+            rules: [],
+        },
+    });
+    `;
 
     return { common, dev, prod };
 }
@@ -581,31 +621,15 @@ function packageJson(name, { ts = false, sass = false }) {
         },
         "keywords": [],
         "author": "",
-        "license": "MIT",
-        "dependencies": {
-            "@riadh-adrani/recursive-web": "^0.7.55"
-        },
-        "devDependencies": {
-            "clean-webpack-plugin": "^4.0.0",
-            "file-loader": "^6.2.0",
-            "html-loader": "^3.1.0",
-            "html-webpack-plugin": "^5.5.0",
-            "terser-webpack-plugin": "^5.3.0",
-            "webpack-cli": "^4.9.1",
-            "webpack-dev-server": "^4.7.2",
-            "webpack-merge": "^5.8.0"
-        }
+        "license": "MIT"
     }`;
 }
 
 function gitignore() {
-    return `# dependencies
-            /node_modules
-
-            # production
-            /dist
-            
-            .vscode`;
+    return `
+/node_modules
+/dist
+.vscode`;
 }
 
 function html(name) {
